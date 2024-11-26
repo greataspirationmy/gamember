@@ -2,7 +2,7 @@
   "name": "Member Dashboard",
   "short_name": "MemDash",
   "description": "Member Dashboard and Event Calendar",
-  "start_url": "/greataspirationmy.github.io/gamember/index.html",
+  "start_url": "/greataspirationmy.github.io/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
