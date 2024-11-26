@@ -1,12 +1,12 @@
 const CACHE_NAME = 'member-dashboard-v1';
 const urlsToCache = [
-  '/greataspirationmy.github.io/gamember/',
-  '/greataspirationmy.github.io/gamember/index.html',
-  '/greataspirationmy.github.io/gamember/dashboard.html',
-  '/greataspirationmy.github.io/gamember/events.html',
-  '/greataspirationmy.github.io/gamember/manifest.json',
-  '/greataspirationmy.github.io/gamember/js/app.js',
-  '/greataspirationmy.github.io/gamember/icons/icon-192x192.png',
+  '/greataspirationmy.github.io/',
+  '/greataspirationmy.github.io/index.html',
+  '/greataspirationmy.github.io/dashboard.html',
+  '/greataspirationmy.github.io/events.html',
+  '/greataspirationmy.github.io/manifest.json',
+  '/greataspirationmy.github.io/js/app.js',
+  '/greataspirationmy.github.io/icons/icon-192x192.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', 
   // 添加其他需要缓存的资源
 ];
