@@ -149,7 +149,7 @@
     if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('https://greataspirationmy.github.io/gamember/sw.js', {
-      scope: '/greataspirationmy.github.io/'
+      scope: 'https://greataspirationmy.github.io/'
     })
     .then(registration => {
       console.log('ServiceWorker registration successful');
