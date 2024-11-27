@@ -105,14 +105,30 @@
             </div>
         </div>
         <h2>MEMBER LOGIN</h2>
-        <div class="input-group">
-            <label for="employeeId">AGENT ID：</label>
-            <input type="text" id="employeeId" placeholder="INSERT YOUR ID" autocomplete="on">
-        </div>
-        <button onclick="login()">LOGIN</button>
-    </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="agentId">Agent ID</label>
+                <input type="text" id="agentId" name="agentId" placeholder="INSERT YOUR ID" autocomplete="on" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
 
     <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const agentId = document.getElementById('agentId').value;
+    
+    try {
+        const success = await login(agentId);
+        if (!success) {
+            alert('MEMBER ID NOT EXIST');
+        }
+    } catch (error) {
+        console.error('Login failed:', error);
+        alert('Login failed');
+    }
+});
+        
         async function login() {
         const employeeId = document.getElementById('employeeId').value;
         
