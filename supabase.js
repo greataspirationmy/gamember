@@ -1,7 +1,8 @@
-const SUPABASE_URL = 'https://tzekaxushnvtrpywvfcu.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWtheHVzaG52dHJweXd2ZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2ODkwMzcsImV4cCI6MjA0ODI2NTAzN30.e8FCxsbI0aj9mZOtxyCZ7sA-fIlzLN-2x8HYoE74ESY'
+const supabaseClient = supabase.createClient(
+    'https://tzekaxushnvtrpywvfcu.supabase.co',  // 替换为您的 Supabase URL
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWtheHVzaG52dHJweXd2ZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2ODkwMzcsImV4cCI6MjA0ODI2NTAzN30.e8FCxsbI0aj9mZOtxyCZ7sA-fIlzLN-2x8HYoE74ESY'  // 替换为您的 anon key
+);
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
 
 // 登录函数
 async function login(agentId) {
