@@ -148,7 +148,7 @@
 
     if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/greataspirationmy.github.io/sw.js', {
+    navigator.serviceWorker.register('https://greataspirationmy.github.io/gamember/sw.js', {
       scope: '/greataspirationmy.github.io/'
     })
     .then(registration => {
