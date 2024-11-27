@@ -1,6 +1,6 @@
 {
   "name": "Member Dashboard",
-  "short_name": "MemDash",
+  "short_name": "GA MEMBER",
   "description": "Member Dashboard and Event Calendar",
   "start_url": "/greataspirationmy.github.io/gamember/index.html",
   "scope": "/greataspirationmy.github.io",
