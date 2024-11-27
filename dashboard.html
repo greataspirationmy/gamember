@@ -501,43 +501,16 @@
     
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+
+       // 加载用户信息时也获取头像
+       async function loadUserInfo() {
+    document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
         console.log('No user found, redirecting to login');
         window.location.href = 'index.html';
         return;
     }
-
-    // 显示用户信息
-    document.getElementById('userName').textContent = user.name;
-    document.getElementById('userRank').textContent = user.ranking;
-    document.getElementById('userLevel').textContent = `Level ${user.level}`;
-    
-    // 计算经验值百分比
-    const expPercentage = (user.experience % 100);
-    document.getElementById('expProgress').style.width = `${expPercentage}%`;
-    document.getElementById('expText').textContent = `${user.experience} XP`;
-});
-
-       // 加载用户信息时也获取头像
-       async function loadUserInfo() {
-    try {
-        const employeeId = sessionStorage.getItem('employeeId');
-        console.log('Loading info for employee:', employeeId);
-
-        if (!employeeId) {
-            console.log('No employee ID found');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const response = await fetch(`http://localhost:3000/api/user/${employeeId}`);
-        const data = await response.json();
-        console.log('User data:', data); // 调试日志
-
-        if (data.success && data.user) {
-            // 更新用户信息
             document.getElementById('userName').textContent = data.user.name;
             document.getElementById('userRank').textContent = data.user.ranking;
             document.getElementById('userLevel').textContent = `Level ${data.user.level || 1}`;
