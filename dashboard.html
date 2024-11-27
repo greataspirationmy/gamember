@@ -501,6 +501,23 @@
     
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const user = getCurrentUser();
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // 显示用户信息
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userRank').textContent = user.ranking;
+    document.getElementById('userLevel').textContent = `Level ${user.level}`;
+    
+    // 计算经验值百分比
+    const expPercentage = (user.experience % 100);
+    document.getElementById('expProgress').style.width = `${expPercentage}%`;
+    document.getElementById('expText').textContent = `${user.experience} XP`;
+});
 
        // 加载用户信息时也获取头像
        async function loadUserInfo() {
