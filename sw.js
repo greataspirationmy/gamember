@@ -5,6 +5,7 @@ const urlsToCache = [
   '/greataspirationmy.github.io/gamember/dashboard.html',
   '/greataspirationmy.github.io/gamember/events.html',
   '/greataspirationmy.github.io/gamember/manifest.json',
+  '/greataspirationmy.github.io/gamember/supabase.js',
   '/greataspirationmy.github.io/gamember/js/app.js',
   '/greataspirationmy.github.io/gamember/icon-144x144.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', 
