@@ -504,66 +504,49 @@
     <script>
 
        // 加载用户信息时也获取头像
-       async function loadUserInfo() {
-    document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
+       document.addEventListener('DOMContentLoaded', () => {
+    // 添加调试日志
+    console.log('Checking localStorage...');
+    const userStr = localStorage.getItem('currentUser');
+    console.log('User string from localStorage:', userStr);
+    
+    const user = JSON.parse(userStr);
+    console.log('Parsed user data:', user);
+
     if (!user) {
         console.log('No user found, redirecting to login');
         window.location.href = 'index.html';
         return;
     }
-            document.getElementById('userName').textContent = data.user.name;
-            document.getElementById('userRank').textContent = data.user.ranking;
-            document.getElementById('userLevel').textContent = `Level ${data.user.level || 1}`;
 
-            // 更新等级和经验值
-           const totalExp = data.user.experience;
-           const level = Math.floor(totalExp / 100) + 1;
-           const currentLevelExp = totalExp % 100;
-           const expPercentage = (currentLevelExp / 100) * 100;
-           
-           console.log('计算后的数据:', { // 调试日志
-               totalExp,
-               level,
-               currentLevelExp,
-               expPercentage
-           });
-           
-           document.getElementById('userLevel').textContent = `Level ${level}`;
-           document.getElementById('expProgress').style.width = `${expPercentage}%`;
-           document.getElementById('expText').textContent = `EXP: ${currentLevelExp}/100`;
-            
-            // 更新头像
-            const avatarElement = document.getElementById('userAvatar');
-            if (data.user.avatar_url) {
-                // 如果有保存的头像URL，使用保存的头像
-                avatarElement.src = data.user.avatar_url;
-            } else {
-                // 如果没有头像，使用默认头像
-                avatarElement.src = 'C:\Users\User\Pictures\default-avatar.jpeg';
-            }
+    // 确保DOM元素存在
+    const userNameElement = document.getElementById('userName');
+    const userRankElement = document.getElementById('userRank');
+    const userLevelElement = document.getElementById('userLevel');
+    const expProgressElement = document.getElementById('expProgress');
+    const expTextElement = document.getElementById('expText');
 
-            // 添加错误处理，以防头像加载失败
-            avatarElement.onerror = function() {
-                this.src = 'C:\Users\User\Pictures\default-avatar.jpeg';
-                console.log('Avatar load failed, using default');
-            };
+    console.log('DOM Elements:', {
+        userName: userNameElement,
+        userRank: userRankElement,
+        userLevel: userLevelElement,
+        expProgress: expProgressElement,
+        expText: expTextElement
+    });
 
-        } else {
-            document.getElementById('userName').textContent = 'MEMBER ID NOT EXIST';
-            document.getElementById('userRank').textContent = 'Please try again';
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('userName').textContent = 'SYSTEM ERROR';
-        document.getElementById('userRank').textContent = 'Please try again';
+    // 显示用户信息
+    if (userNameElement) userNameElement.textContent = user.name;
+    if (userRankElement) userRankElement.textContent = user.ranking;
+    if (userLevelElement) userLevelElement.textContent = `Level ${user.level}`;
+    
+    // 计算经验值百分比
+    if (expProgressElement && expTextElement) {
+        const expPercentage = (user.experience % 100);
+        expProgressElement.style.width = `${expPercentage}%`;
+        expTextElement.textContent = `${user.experience} XP`;
     }
- }
- // 确保在页面加载时执行
- document.addEventListener('DOMContentLoaded', loadUserInfo);
+});
+ 
 
     // 显示升级提示框
     function showLevelUpModal(newLevel) {
