@@ -32,3 +32,69 @@ function getCurrentUser() {
     const userStr = localStorage.getItem('currentUser');
     return userStr ? JSON.parse(userStr) : null;
 }
+
+// 检查是否可以签到
+async function canCheckin(agentId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('agents')
+            .select('last_checkin')
+            .eq('agent_id', agentId)
+            .single();
+
+        if (error) throw error;
+
+        if (!data.last_checkin) return true;
+
+        const lastCheckin = new Date(data.last_checkin);
+        const today = new Date();
+        return lastCheckin.toDateString() !== today.toDateString();
+    } catch (error) {
+        console.error('Check-in check failed:', error);
+        return false;
+    }
+}
+
+// 执行签到
+async function performCheckin(agentId) {
+    try {
+        // 获取当前用户数据
+        const { data: userData, error: userError } = await supabaseClient
+            .from('agents')
+            .select('*')
+            .eq('agent_id', agentId)
+            .single();
+
+        if (userError) throw userError;
+
+        const oldLevel = Math.floor(userData.experience / 100) + 1;
+        const newExperience = userData.experience + 10;
+        const newLevel = Math.floor(newExperience / 100) + 1;
+
+        // 更新经验值和签到时间
+        const { data, error } = await supabaseClient
+            .from('agents')
+            .update({ 
+                experience: newExperience,
+                last_checkin: new Date().toISOString().split('T')[0]
+            })
+            .eq('agent_id', agentId)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // 更新本地存储的用户数据
+        localStorage.setItem('currentUser', JSON.stringify(data));
+
+        // 检查是否升级
+        if (newLevel > oldLevel) {
+            alert(`恭喜，你升到 Level ${newLevel} 了！`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Check-in failed:', error);
+        throw error;
+    }
+}
