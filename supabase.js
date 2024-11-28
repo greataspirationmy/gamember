@@ -33,6 +33,48 @@ function getCurrentUser() {
     return userStr ? JSON.parse(userStr) : null;
 }
 
+// 上传头像到 Supabase Storage
+async function uploadAvatar(file, agentId) {
+    try {
+        // 生成唯一的文件名
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${agentId}-${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        // 上传文件到 Storage
+        const { error: uploadError } = await supabaseClient
+            .storage
+            .from('avatars')  // 确保在 Supabase 中创建了这个 bucket
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // 获取文件的公共URL
+        const { data: { publicUrl } } = supabaseClient
+            .storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        // 更新用户的 avatar_url
+        const { data, error: updateError } = await supabaseClient
+            .from('agents')
+            .update({ avatar_url: publicUrl })
+            .eq('agent_id', agentId)
+            .select()
+            .single();
+
+        if (updateError) throw updateError;
+
+        // 更新本地存储
+        localStorage.setItem('currentUser', JSON.stringify(data));
+
+        return publicUrl;
+    } catch (error) {
+        console.error('Avatar upload failed:', error);
+        throw error;
+    }
+}
+
 // 检查是否可以签到
 async function canCheckin(agentId) {
     try {
