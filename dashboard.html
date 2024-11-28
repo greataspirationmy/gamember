@@ -463,9 +463,9 @@
                 </div>
             </div>
             <div class="check-in-container">
-                <button id="checkInButton" class="check-in-button" onclick="checkIn()">
+                <button id="checkinBtn" class="check-in-button" onclick="checkIn()">
                     <i class="fas fa-calendar-check"></i>
-                    Check-In
+                    Daily Check-In
                 </button>
             </div>
             <div id="checkInModal" class="check-in-modal">
@@ -503,48 +503,63 @@
 
     <script>
 
-       // 加载用户信息时也获取头像
-       document.addEventListener('DOMContentLoaded', () => {
-    // 添加调试日志
-    console.log('Checking localStorage...');
-    const userStr = localStorage.getItem('currentUser');
-    console.log('User string from localStorage:', userStr);
-    
-    const user = JSON.parse(userStr);
-    console.log('Parsed user data:', user);
-
+       document.addEventListener('DOMContentLoaded', async () => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
-        console.log('No user found, redirecting to login');
         window.location.href = 'index.html';
         return;
     }
 
-    // 确保DOM元素存在
-    const userNameElement = document.getElementById('userName');
-    const userRankElement = document.getElementById('userRank');
-    const userLevelElement = document.getElementById('userLevel');
-    const expProgressElement = document.getElementById('expProgress');
-    const expTextElement = document.getElementById('expText');
-
-    console.log('DOM Elements:', {
-        userName: userNameElement,
-        userRank: userRankElement,
-        userLevel: userLevelElement,
-        expProgress: expProgressElement,
-        expText: expTextElement
-    });
-
     // 显示用户信息
-    if (userNameElement) userNameElement.textContent = user.name;
-    if (userRankElement) userRankElement.textContent = user.ranking;
-    if (userLevelElement) userLevelElement.textContent = `Level ${user.level}`;
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userRank').textContent = user.ranking;
     
-    // 计算经验值百分比
-    if (expProgressElement && expTextElement) {
-        const expPercentage = (user.experience % 100);
-        expProgressElement.style.width = `${expPercentage}%`;
-        expTextElement.textContent = `${user.experience} XP`;
+    // 计算并显示等级
+    const level = Math.floor(user.experience / 100) + 1;
+    document.getElementById('userLevel').textContent = `Level ${level}`;
+    
+    // 计算当前等级的经验值进度
+    const currentLevelExp = user.experience % 100;
+    document.getElementById('expProgress').style.width = `${currentLevelExp}%`;
+    document.getElementById('expText').textContent = `${currentLevelExp}/100 XP`;
+
+    // 处理签到按钮
+    const checkinBtn = document.getElementById('checkinBtn');
+    
+    // 检查今天是否已经签到
+    const canCheckInToday = await canCheckin(user.agent_id);
+    if (!canCheckInToday) {
+        checkinBtn.disabled = true;
+        checkinBtn.textContent = 'Already Checked In Today';
     }
+
+    checkinBtn.addEventListener('click', async () => {
+        try {
+            if (!canCheckInToday) {
+                alert('You have already checked in today!');
+                return;
+            }
+
+            checkinBtn.disabled = true;
+            const updatedUser = await performCheckin(user.agent_id);
+            
+            // 更新显示
+            const newLevel = Math.floor(updatedUser.experience / 100) + 1;
+            const newExp = updatedUser.experience % 100;
+            
+            document.getElementById('userLevel').textContent = `Level ${newLevel}`;
+            document.getElementById('expProgress').style.width = `${newExp}%`;
+            document.getElementById('expText').textContent = `${newExp}/100 XP`;
+            
+            checkinBtn.textContent = 'Already Checked In Today';
+            
+            alert('Check-in successful! +10 XP');
+        } catch (error) {
+            console.error('Check-in failed:', error);
+            alert('Check-in failed. Please try again.');
+            checkinBtn.disabled = false;
+        }
+    });
 });
  
 
