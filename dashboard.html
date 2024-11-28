@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://greataspirationmy.github.io/gamember/supabase.js" defer></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <title>Dashboard</title>
     <style>
         * {
@@ -106,41 +104,6 @@
     .avatar-upload span {
         font-size: 14px;
     }
-        .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
-    padding-top: 60px;
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
 
     /* 添加上传进度条样式 */
     .upload-progress {
@@ -504,14 +467,7 @@
                style="display: none;">
             </div>
         </div>
-        <div id="cropperModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>裁剪头像</h2>
-        <img id="cropperImage" style="max-width: 100%;">
-        <button id="cropBtn" class="upload-btn">裁剪并上传</button>
-    </div>
-</div>
+        
         <div class="user-profile">
             <div class="user-info">
                 <div class="user-name" id="userName">加载中...</div>
@@ -566,139 +522,105 @@
     <script>
 
       document.addEventListener('DOMContentLoaded', async () => {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            if (!user) {
-                window.location.href = 'index.html';
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+           // 显示用户头像
+    const userAvatar = document.getElementById('userAvatar');
+    if (user.avatar_url) {
+        userAvatar.src = user.avatar_url;
+    }
+
+    // 处理头像上传
+    const avatarInput = document.getElementById('avatarInput');
+    avatarInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 检查文件类型和大小
+        if (!file.type.startsWith('image/')) {
+            alert('请上传图片文件');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {  // 5MB 限制
+            alert('图片大小不能超过 5MB');
+            return;
+        }
+
+        try {
+            // 显示加载状态
+            userAvatar.style.opacity = '0.5';
+            
+            // 上传头像
+            const newAvatarUrl = await uploadAvatar(file, user.agent_id);
+            
+            // 更新显示
+            userAvatar.src = newAvatarUrl;
+            userAvatar.style.opacity = '1';
+            
+            alert('头像更新成功！');
+        } catch (error) {
+            console.error('Avatar upload failed:', error);
+            alert('头像上传失败，请重试');
+            userAvatar.style.opacity = '1';
+        }
+    });
+
+    // 显示用户信息
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userRank').textContent = user.ranking;
+    
+    // 计算并显示等级
+    const level = Math.floor(user.experience / 100) + 1;
+    document.getElementById('userLevel').textContent = `Level ${level}`;
+    
+    // 计算当前等级的经验值进度
+    const currentLevelExp = user.experience % 100;
+    document.getElementById('expProgress').style.width = `${currentLevelExp}%`;
+    document.getElementById('expText').textContent = `${currentLevelExp}/100 XP`;
+
+    // 处理签到按钮
+    const checkinBtn = document.getElementById('checkinBtn');
+    
+    // 检查今天是否已经签到
+    const canCheckInToday = await canCheckin(user.agent_id);
+    if (!canCheckInToday) {
+        checkinBtn.disabled = true;
+        checkinBtn.textContent = 'Already Checked In Today';
+    }
+
+    checkinBtn.addEventListener('click', async () => {
+        try {
+            if (!canCheckInToday) {
+                alert('You have already checked in today!');
                 return;
             }
 
-            // 显示用户信息
-            const userAvatar = document.getElementById('userAvatar');
-            const userName = document.getElementById('userName');
-            const userRank = document.getElementById('userRank');
-            const userLevel = document.getElementById('userLevel');
-            const expProgress = document.getElementById('expProgress');
-            const expText = document.getElementById('expText');
-            const checkinBtn = document.getElementById('checkinBtn');
-
-            // 设置用户信息
-            if (user.avatar_url) {
-                userAvatar.src = user.avatar_url;
-            }
-            userName.textContent = user.name;
-            userRank.textContent = user.ranking;
+            checkinBtn.disabled = true;
+            const updatedUser = await performCheckin(user.agent_id);
             
-            const level = Math.floor(user.experience / 100) + 1;
-            userLevel.textContent = `Level ${level}`;
+            // 更新显示
+            const newLevel = Math.floor(updatedUser.experience / 100) + 1;
+            const newExp = updatedUser.experience % 100;
             
-            const currentLevelExp = user.experience % 100;
-            expProgress.style.width = `${currentLevelExp}%`;
-            expText.textContent = `${currentLevelExp}/100 XP`;
-
-            // 检查今天是否已经签到
-            const canCheckInToday = await canCheckin(user.agent_id);
-            if (!canCheckInToday) {
-                checkinBtn.disabled = true;
-                checkinBtn.textContent = 'Already Checked In Today';
-            }
-
-            // 处理签到
-            checkinBtn.addEventListener('click', async () => {
-                try {
-                    if (!canCheckInToday) {
-                        alert('You have already checked in today!');
-                        return;
-                    }
-
-                    checkinBtn.disabled = true;
-                    const updatedUser = await performCheckin(user.agent_id);
-                    
-                    const newLevel = Math.floor(updatedUser.experience / 100) + 1;
-                    const newExp = updatedUser.experience % 100;
-                    
-                    userLevel.textContent = `Level ${newLevel}`;
-                    expProgress.style.width = `${newExp}%`;
-                    expText.textContent = `${newExp}/100 XP`;
-                    
-                    checkinBtn.textContent = 'Already Checked In Today';
-                    
-                    alert('Check-in successful! +10 XP');
-                } catch (error) {
-                    console.error('Check-in failed:', error);
-                    alert('Check-in failed. Please try again.');
-                    checkinBtn.disabled = false;
-                }
-            });
-
-            // 处理头像上传
-            const avatarInput = document.getElementById('avatarInput');
-            const cropperModal = document.getElementById('cropperModal');
-            const cropperImage = document.getElementById('cropperImage');
-            const cropBtn = document.getElementById('cropBtn');
-            const closeModal = document.querySelector('.close');
-            let cropper;
-
-            avatarInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                if (!file.type.startsWith('image/')) {
-                    alert('请上传图片文件');
-                    return;
-                }
-
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('图片大小不能超过 5MB');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = () => {
-                    cropperImage.src = reader.result;
-                    cropperModal.style.display = 'block';
-
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-                    cropper = new Cropper(cropperImage, {
-                        aspectRatio: 1,
-                        viewMode: 1,
-                        autoCropArea: 1,
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-
-            cropBtn.addEventListener('click', async () => {
-                const canvas = cropper.getCroppedCanvas({
-                    width: 150,
-                    height: 150,
-                });
-
-                canvas.toBlob(async (blob) => {
-                    try {
-                        const newAvatarUrl = await uploadAvatar(blob, user.agent_id);
-                        userAvatar.src = newAvatarUrl;
-                        alert('头像更新成功！');
-                    } catch (error) {
-                        console.error('Avatar upload failed:', error);
-                        alert('头像上传失败，请重试');
-                    } finally {
-                        cropperModal.style.display = 'none';
-                    }
-                }, 'image/jpeg');
-            });
-
-            closeModal.onclick = () => {
-                cropperModal.style.display = 'none';
-            };
-
-            window.onclick = (event) => {
-                if (event.target == cropperModal) {
-                    cropperModal.style.display = 'none';
-                }
-            };
-        });
+            document.getElementById('userLevel').textContent = `Level ${newLevel}`;
+            document.getElementById('expProgress').style.width = `${newExp}%`;
+            document.getElementById('expText').textContent = `${newExp}/100 XP`;
+            
+            checkinBtn.textContent = 'Already Checked In Today';
+            
+            alert('Check-in successful! +10 XP');
+        } catch (error) {
+            console.error('Check-in failed:', error);
+            alert('Check-in failed. Please try again.');
+            checkinBtn.disabled = false;
+        }
+    });
+});
  
 
     // 显示升级提示框
