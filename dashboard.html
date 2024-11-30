@@ -627,7 +627,27 @@
         }
     });
 
-          // 加载通知
+    // 订阅实时更新
+    const channel = supabaseClient
+        .channel('public:notifications')
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'notifications',
+                filter: `agent_id=eq.${user.agent_id}`
+            },
+            (payload) => {
+                console.log('New notification received:', payload);
+                addNotificationToList(payload.new);
+                updateNotificationCount(1);
+            }
+        )
+        .subscribe();
+});
+
+        // 加载通知
     async function loadNotifications() {
         try {
             const { data, error } = await supabaseClient
@@ -659,29 +679,8 @@
             console.error('Error loading notifications:', error);
         }
     }
-
-    // 订阅实时更新
-    const channel = supabaseClient
-        .channel('public:notifications')
-        .on(
-            'postgres_changes',
-            {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'notifications',
-                filter: `agent_id=eq.${user.agent_id}`
-            },
-            (payload) => {
-                console.log('New notification received:', payload);
-                addNotificationToList(payload.new);
-                updateNotificationCount(1);
-            }
-        )
-        .subscribe();
-
-    // 初始加载通知
+        // 初始加载通知
     await loadNotifications();
-});
 
         async function subscribeToNotifications() {
   try {
