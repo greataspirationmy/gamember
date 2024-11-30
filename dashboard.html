@@ -535,6 +535,27 @@
     document.querySelector('.menu-button.notifications')
         .addEventListener('click', toggleNotifications);
 
+        // 标记通知为已读的全局函数
+async function markNotificationsAsRead() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('agent_id', user.agent_id)
+            .eq('is_read', false);
+
+        if (error) throw error;
+        
+        // 重新加载通知以更新显示
+        await loadNotifications();
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+    }
+}
+
         document.addEventListener('DOMContentLoaded', async () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
@@ -635,7 +656,18 @@
         }
     });
 
-             
+             function toggleNotifications() {
+    const panel = document.getElementById('notificationsList');
+    const isActive = panel.classList.toggle('active');
+    
+    if (isActive) {
+        // 当打开通知面板时，标记所有通知为已读
+        markNotificationsAsRead();
+    }
+}
+        // 添加点击事件监听器
+    document.querySelector('.menu-button.notifications')
+        .addEventListener('click', toggleNotifications);
 
 // 标记通知为已读的全局函数
 async function markNotificationsAsRead() {
