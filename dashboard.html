@@ -402,6 +402,9 @@
        font-size: 12px;
        color: #888;
    }
+    .notification-item.unread {
+  background: #e8f5e9;
+    }
     /* 通知按钮容器样式 */
     .menu-button.notifications {
        position: relative;
@@ -501,7 +504,7 @@
                 Events
             </button>
         </div>
-        <div class="notifications-panel" id="notificationsPanel">
+        <div class="notifications-panel" id="notificationsList">
             <div class="notifications-header">
                 <h3>Notifications</h3>
                 <button class="close-btn" onclick="toggleNotifications()">X</button>
@@ -620,6 +623,86 @@
         }
     });
 });
+
+        async function subscribeToNotifications() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      throw new Error('Permission not granted for Notification');
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY' // 需要从 Web Push 服务获取
+    });
+
+    // 保存订阅信息到 Supabase
+    const { error } = await supabaseClient
+      .from('push_subscriptions')
+      .upsert({
+        agent_id: user.agent_id,
+        subscription: subscription
+      });
+
+    if (error) throw error;
+    console.log('Push notification subscription successful');
+  } catch (error) {
+    console.error('Error subscribing to push notifications:', error);
+  }
+}
+
+// 在页面加载时检查并订阅通知
+document.addEventListener('DOMContentLoaded', async () => {
+  // ... 现有的代码 ...
+
+  // 添加通知订阅按钮
+  const notificationBtn = document.createElement('button');
+  notificationBtn.textContent = 'Enable Notifications';
+  notificationBtn.className = 'checkin-btn';
+  notificationBtn.onclick = subscribeToNotifications;
+  document.querySelector('.user-info').appendChild(notificationBtn);
+
+  // 订阅 Supabase 实时更新
+  const subscription = supabaseClient
+    .from(`notifications:agent_id=eq.${user.agent_id}`)
+    .on('INSERT', payload => {
+      // 显示新通知
+      if (Notification.permission === 'granted') {
+        new Notification(payload.new.title, {
+          body: payload.new.message,
+          icon: '/icons/icon-192x192.png'
+        });
+      }
+    })
+    .subscribe();
+});
+
+        async function loadNotifications() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('notifications')
+      .select('*')
+      .eq('agent_id', user.agent_id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const notificationsList = document.getElementById('notificationsList');
+    notificationsList.innerHTML = data.map(notification => `
+      <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+        <h4>${notification.title}</h4>
+        <p>${notification.message}</p>
+        <small>${new Date(notification.created_at).toLocaleString()}</small>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+  }
+}
+
+// 在页面加载时加载通知
+loadNotifications();
  
 
     // 显示升级提示框
@@ -703,60 +786,7 @@
  `;
  document.head.appendChild(style);
 
-    // 文件上传处理
-    document.getElementById('avatarInput').addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // 验证文件类型
-        if (!file.type.startsWith('image/')) {
-            alert('请上传图片文件');
-            return;
-        }
-
-        // 验证文件大小（最大 5MB）
-        if (file.size > 5 * 1024 * 1024) {
-            alert('图片大小不能超过 5MB');
-            return;
-        }
-
-        try {
-            const formData = new FormData();
-            formData.append('avatar', file);
-            formData.append('employeeId', sessionStorage.getItem('employeeId'));
-
-            // 显示上传进度条或加载动画
-            // ... 
-
-            const response = await fetch('http://localhost:3000/api/upload-avatar', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // 立即更新头像显示
-                document.getElementById('userAvatar').src = data.avatarUrl;
-                console.log('Avatar URL:', data.avatarUrl); // 调试日志
-                alert('头像更新成功');
-            } else {
-                alert('上传失败：' + data.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('上传失败，请稍后重试');
-        }
-    });
-
-    // 预览图片
-    function previewImage(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('userAvatar').src = e.target.result;
-        }
-        reader.readAsDataURL(file);
-    }
+   
          
 
 
