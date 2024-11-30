@@ -623,26 +623,27 @@
         }
     });
 
-          // 添加通知订阅按钮
-  const notificationBtn = document.createElement('button');
-  notificationBtn.textContent = 'Enable Notifications';
-  notificationBtn.className = 'checkin-btn';
-  notificationBtn.onclick = subscribeToNotifications;
-  document.querySelector('.user-info').appendChild(notificationBtn);
+          // 加载初始通知
+    await loadNotifications();
 
-  // 订阅 Supabase 实时更新
-  const subscription = supabaseClient
-    .from(`notifications:agent_id=eq.${user.agent_id}`)
-    .on('INSERT', payload => {
-      // 显示新通知
-      if (Notification.permission === 'granted') {
-        new Notification(payload.new.title, {
-          body: payload.new.message,
-          icon: 'https://greataspirationmy.github.io/gamember/icon-192x192.png'
-        });
-      }
-    })
-    .subscribe();
+    // 订阅实时更新
+    const subscription = supabaseClient
+        .channel('public:notifications')
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'notifications',
+                filter: `agent_id=eq.${user.agent_id}`
+            },
+            (payload) => {
+                console.log('New notification:', payload);
+                addNotificationToList(payload.new);
+                updateNotificationCount(1);
+            }
+        )
+        .subscribe();
 });
 
         async function subscribeToNotifications() {
@@ -675,27 +676,63 @@
 
 
 
-        async function loadNotifications() {
-  try {
-    const { data, error } = await supabaseClient
-      .from('notifications')
-      .select('*')
-      .eq('agent_id', user.agent_id)
-      .order('created_at', { ascending: false });
+        // 加载通知的函数
+async function loadNotifications() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('notifications')
+            .select('*')
+            .eq('agent_id', user.agent_id)
+            .order('created_at', { ascending: false });
 
-    if (error) throw error;
+        if (error) throw error;
 
-    const notificationsList = document.getElementById('notificationsList');
-    notificationsList.innerHTML = data.map(notification => `
-      <div class="notification-item ${notification.is_read ? '' : 'unread'}">
-        <h4>${notification.title}</h4>
-        <p>${notification.message}</p>
-        <small>${new Date(notification.created_at).toLocaleString()}</small>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading notifications:', error);
-  }
+        console.log('Loaded notifications:', data); // 调试日志
+
+        const notificationsList = document.querySelector('.notifications-content');
+        notificationsList.innerHTML = data.map(notification => `
+            <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+                <p class="notification-text">${notification.message}</p>
+                <span class="notification-time">
+                    ${new Date(notification.created_at).toLocaleString()}
+                </span>
+            </div>
+        `).join('');
+
+        // 更新未读通知计数
+        const unreadCount = data.filter(n => !n.is_read).length;
+        updateNotificationCount(unreadCount);
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+// 添加新通知到列表
+function addNotificationToList(notification) {
+    const notificationsList = document.querySelector('.notifications-content');
+    const notificationElement = document.createElement('div');
+    notificationElement.className = `notification-item ${notification.is_read ? '' : 'unread'}`;
+    notificationElement.innerHTML = `
+        <p class="notification-text">${notification.message}</p>
+        <span class="notification-time">
+            ${new Date(notification.created_at).toLocaleString()}
+        </span>
+    `;
+    notificationsList.insertBefore(notificationElement, notificationsList.firstChild);
+}
+
+// 更新通知计数
+function updateNotificationCount(count) {
+    const badge = document.getElementById('notificationBadge');
+    const currentCount = parseInt(badge.textContent) || 0;
+    const newCount = count === 1 ? currentCount + 1 : count;
+    
+    if (newCount > 0) {
+        badge.textContent = newCount;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
 }
 
 // 在页面加载时加载通知
@@ -812,65 +849,6 @@ loadNotifications();
 
    
          
-
-
-
- 
- // 示例：动态添加通知
- function addNotification(text, time) {
-   const content = document.querySelector('.notifications-content');
-   const notificationItem = document.createElement('div');
-   notificationItem.className = 'notification-item';
-   notificationItem.innerHTML = `
-       <p class="notification-text">${text}</p>
-       <span class="notification-time">${time}</span>
-   `;
-   content.prepend(notificationItem);
- }
-// 示例使用：
-// addNotification('新的通知内容', '2024-03-21 11:00');
-// 更新通知计数
-// 新通知计数的函数
-function updateNotificationCount(count) {
-   const badge = document.getElementById('notificationBadge');
-   const notificationBtn = document.querySelector('.menu-button.notifications');
-   
-   if (count > 0) {
-       // 更新徽章
-       badge.textContent = count;
-       badge.classList.remove('hidden');
-       
-       // 更新按钮样式
-       notificationBtn.classList.add('has-notifications');
-   } else {
-       // 隐藏徽章
-       badge.classList.add('hidden');
-       
-       // 恢复按钮样式
-       notificationBtn.classList.remove('has-notifications');
-   }
-}
-// 接收新通知的函数
-function receiveNewNotification(notification) {
-   // 添加新通知到面板
-   addNotification(notification.text, notification.time);
-   
-   // 获取当前计数并增加
-   const badge = document.getElementById('notificationBadge');
-   const currentCount = parseInt(badge.textContent) || 0;
-   updateNotificationCount(currentCount + 1);
-}
-// 添加通知到面板的函数
-function addNotification(text, time) {
-   const content = document.querySelector('.notifications-content');
-   const notificationItem = document.createElement('div');
-   notificationItem.className = 'notification-item';
-   notificationItem.innerHTML = `
-       <p class="notification-text">${text}</p>
-       <span class="notification-time">${time}</span>
-   `;
-   content.prepend(notificationItem);
-}
 
     if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
