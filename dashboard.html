@@ -622,6 +622,94 @@
             checkinBtn.disabled = false;
         }
     });
+
+            // 加载通知
+    async function loadNotifications() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('notifications')
+                .select('*')
+                .eq('agent_id', user.agent_id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const notificationsList = document.querySelector('.notifications-content');
+            if (notificationsList) {
+                notificationsList.innerHTML = data.map(notification => `
+                    <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+                        <p class="notification-text">${notification.message}</p>
+                        <span class="notification-time">
+                            ${new Date(notification.created_at).toLocaleString()}
+                        </span>
+                    </div>
+                `).join('');
+
+                // 更新通知计数和按钮状态
+                const unreadCount = data.filter(n => !n.is_read).length;
+                updateNotificationStatus(unreadCount, data.length);
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    // 更新通知状态
+    function updateNotificationStatus(unreadCount, totalCount) {
+        const notificationBtn = document.querySelector('.menu-button.notifications');
+        const badge = document.getElementById('notificationBadge');
+        
+        // 更新徽章显示总数
+        if (totalCount > 0) {
+            badge.textContent = totalCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+        
+        // 更新按钮颜色状态
+        if (unreadCount > 0) {
+            notificationBtn.classList.add('has-notifications');
+        } else {
+            notificationBtn.classList.remove('has-notifications');
+        }
+    }
+
+    // 标记通知为已读
+    async function markNotificationsAsRead() {
+        try {
+            const { error } = await supabaseClient
+                .from('notifications')
+                .update({ is_read: true })
+                .eq('agent_id', user.agent_id)
+                .eq('is_read', false);
+
+            if (error) throw error;
+            
+            // 重新加载通知以更新显示
+            await loadNotifications();
+        } catch (error) {
+            console.error('Error marking notifications as read:', error);
+        }
+    }
+
+    // 处理通知面板的显示/隐藏
+    function toggleNotifications() {
+        const panel = document.getElementById('notificationsList');
+        const isActive = panel.classList.toggle('active');
+        
+        // 当打开通知面板时，标记所有通知为已读
+        if (isActive) {
+            markNotificationsAsRead();
+        }
+    }
+
+    // 添加点击事件监听器
+    document.querySelector('.menu-button.notifications')
+        .addEventListener('click', toggleNotifications);
+
+    // 初始加载通知
+    await loadNotifications();
 });
 
         
