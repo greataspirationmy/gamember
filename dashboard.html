@@ -656,7 +656,108 @@ async function markNotificationsAsRead() {
         }
     });
 
-            
+            function toggleNotifications() {
+    const panel = document.getElementById('notificationsList');
+    const isActive = panel.classList.toggle('active');
+    
+    if (isActive) {
+        // 当打开通知面板时，标记所有通知为已读
+        markNotificationsAsRead();
+    }
+}
+        // 添加点击事件监听器
+    document.querySelector('.menu-button.notifications')
+        .addEventListener('click', toggleNotifications);
+
+// 标记通知为已读的全局函数
+async function markNotificationsAsRead() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('agent_id', user.agent_id)
+            .eq('is_read', false);
+
+        if (error) throw error;
+        
+        // 重新加载通知以更新显示
+        await loadNotifications();
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+    }
+}
+
+// 加载通知的全局函数
+async function loadNotifications() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('notifications')
+            .select('*')
+            .eq('agent_id', user.agent_id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const notificationsList = document.querySelector('.notifications-content');
+        if (notificationsList) {
+            notificationsList.innerHTML = data.map(notification => `
+                <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+                    <p class="notification-text">${notification.message}</p>
+                    <span class="notification-time">
+                        ${new Date(notification.created_at).toLocaleDateString()}
+                    </span>
+                </div>
+            `).join('');
+
+            // 更新通知计数和按钮状态
+            const unreadCount = data.filter(n => !n.is_read).length;
+            updateNotificationStatus(unreadCount, data.length);
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+// 更新通知状态的全局函数
+function updateNotificationStatus(unreadCount, totalCount) {
+    const notificationBtn = document.querySelector('.menu-button.notifications');
+    const badge = document.getElementById('notificationBadge');
+    
+    // 更新徽章显示总数
+    if (totalCount > 0) {
+        badge.textContent = totalCount;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+    
+    // 更新按钮颜色状态
+    if (unreadCount > 0) {
+        notificationBtn.classList.add('has-notifications');
+    } else {
+        notificationBtn.classList.remove('has-notifications');
+    }
+}
+        document.addEventListener('click', function(event) {
+    const panel = document.getElementById('notificationsList');
+    const notificationBtn = document.querySelector('.menu-button.notifications');
+    
+    if (panel && panel.classList.contains('active')) {
+        // 如果点击的不是通知面板内的元素，也不是通知按钮
+        if (!panel.contains(event.target) && !notificationBtn.contains(event.target)) {
+            panel.classList.remove('active');
+        }
+    }
+});
+
+    // 初始加载通知
+    await loadNotifications();
 });
 
  
@@ -673,7 +774,58 @@ async function markNotificationsAsRead() {
         modal.style.display = 'none';
     }
 
-    
+    // 更新经验值的函数
+ async function addExperience(amount) {
+    try {
+        const employeeId = sessionStorage.getItem('employeeId');
+        const response = await fetch('http://localhost:3000/api/update-experience', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                employeeId,
+                experienceGained: amount
+            })
+        });
+
+        const data = await response.json();
+        console.log('Experience update response:', data); // 调试日志
+
+        if (data.success) {
+            // 获取当前等级
+            const currentLevel = parseInt(document.getElementById('userLevel').textContent.split(' ')[1]);
+            // 立即更新经验条
+            const currentLevelExp = data.experience % 100;
+            const expPercentage = (currentLevelExp / 100) * 100;
+            
+            const expProgress = document.getElementById('expProgress');
+            const expText = document.getElementById('expText');
+            const levelText = document.getElementById('userLevel');
+            
+            expProgress.style.width = `${expPercentage}%`;
+            expText.textContent = `EXP: ${currentLevelExp}/100`;
+            levelText.textContent = `Level ${data.level}`;
+            
+            // 更新显示
+           document.getElementById('expProgress').style.width = `${expPercentage}%`;
+           document.getElementById('expText').textContent = `EXP: ${currentLevelExp}/100`;
+           document.getElementById('userLevel').textContent = `Level ${currentLevel}`;
+
+            // 如果升级了，可以添加一个动画效果
+            if (data.level > parseInt(levelText.textContent.split(' ')[1])) {
+                levelText.classList.add('level-up');
+                setTimeout(() => levelText.classList.remove('level-up'), 1000);
+            }
+            // 检查是否升级
+            if (data.level > currentLevel) {
+                    showLevelUpModal(data.level);
+                }
+        }
+    } catch (error) {
+        console.error('Error updating experience:', error);
+    }
+ }
 
 
  // 添加升级动画样式
