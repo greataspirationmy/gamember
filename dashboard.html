@@ -634,7 +634,7 @@
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY' // 需要从 Web Push 服务获取
+      applicationServerKey: 'BJ0_iG3yTb_yXmk5ZzbVPl2a10M95xhkyK8AVCIm2RbY5zgknLtpClObnyjXTFjAWlW4kHwQx3lgzqvbF3nu_T4' // 需要从 Web Push 服务获取
     });
 
     // 保存订阅信息到 Supabase
