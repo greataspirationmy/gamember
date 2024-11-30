@@ -710,7 +710,7 @@ async function loadNotifications() {
                 <div class="notification-item ${notification.is_read ? '' : 'unread'}">
                     <p class="notification-text">${notification.message}</p>
                     <span class="notification-time">
-                        ${new Date(notification.created_at).toLocaleString()}
+                        ${new Date(notification.created_at).toLocaleDateString()}
                     </span>
                 </div>
             `).join('');
