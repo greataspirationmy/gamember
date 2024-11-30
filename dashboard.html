@@ -522,12 +522,8 @@
     
 
     <script>
-        // 初始化 Supabase 客户端
-        const supabaseUrl = 'https://tzekaxushnvtrpywvfcu.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWtheHVzaG52dHJweXd2ZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2ODkwMzcsImV4cCI6MjA0ODI2NTAzN30.e8FCxsbI0aj9mZOtxyCZ7sA-fIlzLN-2x8HYoE74ESY';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-      document.addEventListener('DOMContentLoaded', async () => {
+        
+        document.addEventListener('DOMContentLoaded', async () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) {
         window.location.href = 'index.html';
@@ -626,8 +622,9 @@
             checkinBtn.disabled = false;
         }
     });
+});
 
-    // 订阅实时更新
+        // 订阅实时更新
     const channel = supabaseClient
         .channel('public:notifications')
         .on(
@@ -645,8 +642,6 @@
             }
         )
         .subscribe();
-});
-
         // 加载通知
     async function loadNotifications() {
         try {
