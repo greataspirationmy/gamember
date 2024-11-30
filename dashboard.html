@@ -712,23 +712,6 @@
     await loadNotifications();
 });
 
-        
-
-        
-
- // 点击面板外关闭通知
- document.addEventListener('DOMContentLoaded', function() {
-   const panel = document.getElementById('notificationsPanel');
-   const notificationsBtn = document.querySelector('.menu-button.notifications');
-   
-   if (panel && notificationsBtn) {
-       document.addEventListener('click', function(event) {
-           if (!panel.contains(event.target) && !notificationsBtn.contains(event.target)) {
-               panel.classList.remove('active');
-           }
-       });
-   }
- });
  
 
     // 显示升级提示框
