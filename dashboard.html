@@ -718,13 +718,6 @@
  function toggleNotifications() {
    const panel = document.getElementById('notificationsList');
    panel.classList.toggle('active');
-   
-   // 只有当用户实际点击查看通知时才清除通知状态
-   if (panel.classList.contains('active')) {
-       updateNotificationCount(0);
-   } else {
-       console.log('Panel element not found'); // 调试日志
-   }
  }
 
  // 点击面板外关闭通知
