@@ -522,6 +522,18 @@
     
 
     <script>
+        function toggleNotifications() {
+    const panel = document.getElementById('notificationsList');
+    const isActive = panel.classList.toggle('active');
+    
+    if (isActive) {
+        // 当打开通知面板时，标记所有通知为已读
+        markNotificationsAsRead();
+    }
+}
+        // 添加点击事件监听器
+    document.querySelector('.menu-button.notifications')
+        .addEventListener('click', toggleNotifications);
 
         document.addEventListener('DOMContentLoaded', async () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -623,18 +635,7 @@
         }
     });
 
-             function toggleNotifications() {
-    const panel = document.getElementById('notificationsList');
-    const isActive = panel.classList.toggle('active');
-    
-    if (isActive) {
-        // 当打开通知面板时，标记所有通知为已读
-        markNotificationsAsRead();
-    }
-}
-        // 添加点击事件监听器
-    document.querySelector('.menu-button.notifications')
-        .addEventListener('click', toggleNotifications);
+             
 
 // 标记通知为已读的全局函数
 async function markNotificationsAsRead() {
