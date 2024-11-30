@@ -522,6 +522,10 @@
     
 
     <script>
+        // 初始化 Supabase 客户端
+        const supabaseUrl = 'https://tzekaxushnvtrpywvfcu.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWtheHVzaG52dHJweXd2ZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2ODkwMzcsImV4cCI6MjA0ODI2NTAzN30.e8FCxsbI0aj9mZOtxyCZ7sA-fIlzLN-2x8HYoE74ESY';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
       document.addEventListener('DOMContentLoaded', async () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -623,11 +627,41 @@
         }
     });
 
-          // 加载初始通知
-    await loadNotifications();
+          // 加载通知
+    async function loadNotifications() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('notifications')
+                .select('*')
+                .eq('agent_id', user.agent_id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            console.log('Loaded notifications:', data); // 调试日志
+
+            const notificationsList = document.querySelector('.notifications-content');
+            if (notificationsList) {
+                notificationsList.innerHTML = data.map(notification => `
+                    <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+                        <p class="notification-text">${notification.message}</p>
+                        <span class="notification-time">
+                            ${new Date(notification.created_at).toLocaleString()}
+                        </span>
+                    </div>
+                `).join('');
+
+                // 更新未读通知计数
+                const unreadCount = data.filter(n => !n.is_read).length;
+                updateNotificationCount(unreadCount);
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
 
     // 订阅实时更新
-    const subscription = supabaseClient
+    const channel = supabaseClient
         .channel('public:notifications')
         .on(
             'postgres_changes',
@@ -638,12 +672,15 @@
                 filter: `agent_id=eq.${user.agent_id}`
             },
             (payload) => {
-                console.log('New notification:', payload);
+                console.log('New notification received:', payload);
                 addNotificationToList(payload.new);
                 updateNotificationCount(1);
             }
         )
         .subscribe();
+
+    // 初始加载通知
+    await loadNotifications();
 });
 
         async function subscribeToNotifications() {
@@ -674,69 +711,37 @@
   }
 }
 
-
-
-        // 加载通知的函数
-async function loadNotifications() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('notifications')
-            .select('*')
-            .eq('agent_id', user.agent_id)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        console.log('Loaded notifications:', data); // 调试日志
-
-        const notificationsList = document.querySelector('.notifications-content');
-        notificationsList.innerHTML = data.map(notification => `
-            <div class="notification-item ${notification.is_read ? '' : 'unread'}">
-                <p class="notification-text">${notification.message}</p>
-                <span class="notification-time">
-                    ${new Date(notification.created_at).toLocaleString()}
-                </span>
-            </div>
-        `).join('');
-
-        // 更新未读通知计数
-        const unreadCount = data.filter(n => !n.is_read).length;
-        updateNotificationCount(unreadCount);
-    } catch (error) {
-        console.error('Error loading notifications:', error);
-    }
-}
-
-// 添加新通知到列表
-function addNotificationToList(notification) {
-    const notificationsList = document.querySelector('.notifications-content');
-    const notificationElement = document.createElement('div');
-    notificationElement.className = `notification-item ${notification.is_read ? '' : 'unread'}`;
-    notificationElement.innerHTML = `
-        <p class="notification-text">${notification.message}</p>
-        <span class="notification-time">
-            ${new Date(notification.created_at).toLocaleString()}
-        </span>
-    `;
-    notificationsList.insertBefore(notificationElement, notificationsList.firstChild);
-}
-
-// 更新通知计数
+// 更新通知计数的函数
 function updateNotificationCount(count) {
     const badge = document.getElementById('notificationBadge');
-    const currentCount = parseInt(badge.textContent) || 0;
-    const newCount = count === 1 ? currentCount + 1 : count;
-    
-    if (newCount > 0) {
-        badge.textContent = newCount;
-        badge.classList.remove('hidden');
-    } else {
-        badge.classList.add('hidden');
+    if (badge) {
+        const currentCount = parseInt(badge.textContent) || 0;
+        const newCount = count === 1 ? currentCount + 1 : count;
+        
+        if (newCount > 0) {
+            badge.textContent = newCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
     }
 }
 
-// 在页面加载时加载通知
-loadNotifications();
+// 添加新通知到列表的函数
+function addNotificationToList(notification) {
+    const notificationsList = document.querySelector('.notifications-content');
+    if (notificationsList) {
+        const notificationElement = document.createElement('div');
+        notificationElement.className = `notification-item ${notification.is_read ? '' : 'unread'}`;
+        notificationElement.innerHTML = `
+            <p class="notification-text">${notification.message}</p>
+            <span class="notification-time">
+                ${new Date(notification.created_at).toLocaleString()}
+            </span>
+        `;
+        notificationsList.insertBefore(notificationElement, notificationsList.firstChild);
+    }
+}
 
         // 通知面板显示和隐藏
  function toggleNotifications() {
