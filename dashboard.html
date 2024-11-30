@@ -622,6 +622,27 @@
             checkinBtn.disabled = false;
         }
     });
+
+          // 添加通知订阅按钮
+  const notificationBtn = document.createElement('button');
+  notificationBtn.textContent = 'Enable Notifications';
+  notificationBtn.className = 'checkin-btn';
+  notificationBtn.onclick = subscribeToNotifications;
+  document.querySelector('.user-info').appendChild(notificationBtn);
+
+  // 订阅 Supabase 实时更新
+  const subscription = supabaseClient
+    .from(`notifications:agent_id=eq.${user.agent_id}`)
+    .on('INSERT', payload => {
+      // 显示新通知
+      if (Notification.permission === 'granted') {
+        new Notification(payload.new.title, {
+          body: payload.new.message,
+          icon: 'https://greataspirationmy.github.io/gamember/icon-192x192.png'
+        });
+      }
+    })
+    .subscribe();
 });
 
         async function subscribeToNotifications() {
@@ -652,31 +673,7 @@
   }
 }
 
-// 在页面加载时检查并订阅通知
-document.addEventListener('DOMContentLoaded', async () => {
-  // ... 现有的代码 ...
 
-  // 添加通知订阅按钮
-  const notificationBtn = document.createElement('button');
-  notificationBtn.textContent = 'Enable Notifications';
-  notificationBtn.className = 'checkin-btn';
-  notificationBtn.onclick = subscribeToNotifications;
-  document.querySelector('.user-info').appendChild(notificationBtn);
-
-  // 订阅 Supabase 实时更新
-  const subscription = supabaseClient
-    .from(`notifications:agent_id=eq.${user.agent_id}`)
-    .on('INSERT', payload => {
-      // 显示新通知
-      if (Notification.permission === 'granted') {
-        new Notification(payload.new.title, {
-          body: payload.new.message,
-          icon: 'https://greataspirationmy.github.io/gamember/icon-192x192.png'
-        });
-      }
-    })
-    .subscribe();
-});
 
         async function loadNotifications() {
   try {
