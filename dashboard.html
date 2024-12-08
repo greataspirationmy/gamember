@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://greataspirationmy.github.io/gamember/supabase.js" defer></script>
+    <link href='https://fonts.googleapis.com/css?family=Charmonman' rel='stylesheet'>
     <title>Dashboard</title>
     <style>
         * {
@@ -26,9 +27,34 @@
             align-items: center;
         }
 
+        .logo-container {
+            margin-top: 40px;
+            display: flex;
+            align-items: center; /* 垂直居中对齐 */
+            justify-content: center; /* 水平居中对齐 */
+            margin-bottom: 20px; /* logo 和 MEMBER 之间的间距 */
+        }
+
+        .logo {
+            width: 50px; /* logo 宽度 */
+            height: auto; /* 自适应高度 */
+            margin-right: 10px; /* logo 和文本之间的间距 */
+        }
+
+        .member-text {
+            font-size: 28px; /* 字体大小 */
+            font-weight: bold; /* 字体加粗 */
+            color: #333; /* 字体颜色 */
+            font-family: 'Charmonman';
+        }
+
         .profile-container {
-            margin-top: 50px;
+            margin-top: 5px; /* 调整上方间距 */
             text-align: center;
+            padding: 20px; /* 添加内边距 */
+            background-color: white; /* 背景颜色 */
+            border-radius: 10px; /* 圆角 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* 阴影效果 */
         }
 
         /* 添加头像上传相关样式 */
@@ -458,6 +484,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div class="logo-container">
+        <img src="https://greataspirationmy.github.io/gamember/galogodb.png" alt="Logo" class="logo">
+        <span class="member-text">MEMBER</span>
+    </div>
     <div class="profile-container">
         <div class="avatar">
             <img id="userAvatar"
