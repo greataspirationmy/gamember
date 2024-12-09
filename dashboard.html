@@ -25,6 +25,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin: auto; /* 去掉默认边距 */
+            background-image: url('https://greataspirationmy.github.io/gamember/bg5.gif'); /* 自定义动态背景图 */
+            background-size: cover; /* 背景图覆盖整个页面 */
+            background-position: center; /* 背景图居中 */
+            background-repeat: no-repeat; /* 不重复背景图 */
         }
 
         .logo-container {
@@ -33,6 +38,7 @@
             align-items: center; /* 水平居中对齐 */
             margin-top: 15px; /* logo 和 MEMBER 之间的间距 */
             margin-bottom: 1px;
+            
         }
 
         .logo {
@@ -52,12 +58,10 @@
             margin-top: 1px; /* 调整上方间距 */
             text-align: center;
             padding: 20px; /* 添加内边距 */
-            background-image: url('https://greataspirationmy.github.io/gamember/bg3.jpg'); /* 自定义背景图片 */
-            background-size: cover; /* 背景图片覆盖整个容器 */
-            background-position: center; /* 背景图片居中 */
+            background-color: #ffedcd; 
             border-radius: 10px; /* 圆角 */
-            box-shadow: 0 10px 40px rgba(253, 156, 28, 0.719); /* 阴影效果 */
-            color: white; /* 文字颜色（可选） */
+            box-shadow: 0 10px 25px rgba(253, 156, 28, 0.719); /* 阴影效果 */
+            color: rgb(88, 60, 0); /* 文字颜色（可选） */
         }
 
         /* 添加头像上传相关样式 */
@@ -153,25 +157,25 @@
         .user-name {
             font-size: 24px;
             font-weight: bold;
-            color: #fcf1d9;
+            color: rgb(88, 60, 0);
             margin-bottom: 8px;
         }
 
         .user-rank {
             font-size: 18px;
-            color: #fcf1d9;
+            color: rgb(88, 60, 0);
             margin-bottom: 8px;
-            font-family: 'Charmonman';
         }
 
         .user-level {
             font-size: 20px;
-            color: #976200;
-            background-color: #e8f5e9;
+            color: #ffe7b9;
+            font-weight: bold;
+            background-color: #472e00;
             padding: 4px 12px;
             border-radius: 15px;
             display: inline-block;
-            margin-top: 18px;
+            margin-top: 15px;
             margin-bottom: 10px;
         }
 
