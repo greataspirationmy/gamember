@@ -232,11 +232,11 @@
    color: #333;
 }
 .event-item {
-   padding: 15px;
-   margin-bottom: 10px;
-   background-color: #f8f9fa;
-   border-radius: 8px;
-   transition: all 0.3s;
+    background-color: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 .event-item:hover {
    background-color: #e3f2fd;
@@ -292,6 +292,38 @@
     </div>
 
     <script>
+
+        // 初始化 Supabase 客户端
+        const supabaseUrl = 'https://tzekaxushnvtrpywvfcu.supabase.co'; // 替换为您的 Supabase URL
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWtheHVzaG52dHJweXd2ZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2ODkwMzcsImV4cCI6MjA0ODI2NTAzN30.e8FCxsbI0aj9mZOtxyCZ7sA-fIlzLN-2x8HYoE74ESY'; // 替换为您的 Supabase 匿名密钥
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 加载事件数据
+        async function loadEvents() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('events')
+                    .select('*')
+                    .order('event_date', { ascending: true });
+
+                if (error) throw error;
+
+                const eventsList = document.getElementById('eventsList');
+                eventsList.innerHTML = data.map(event => `
+                    <div class="event-item">
+                        <h3>${event.title}</h3>
+                        <p>${event.description}</p>
+                        <p><strong>日期:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        }
+
+        // 页面加载时调用
+        document.addEventListener('DOMContentLoaded', loadEvents);
+        
         let currentDate = new Date();
         let events = {}; // 存储事件数据
 
