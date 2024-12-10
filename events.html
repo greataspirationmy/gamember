@@ -304,7 +304,7 @@
                 const { data, error } = await supabaseClient
                     .from('events')
                     .select('*')
-                    .order('event_date', { ascending: true });
+                    .order('event_datetime', { ascending: true });
 
                 if (error) throw error;
 
@@ -313,7 +313,7 @@
                     <div class="event-item">
                         <h3>${event.title}</h3>
                         <p>${event.description}</p>
-                        <p><strong>日期:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
+                        <p><strong>时间:</strong> ${new Date(event.event_datetime).toLocaleString()}</p>
                     </div>
                 `).join('');
             } catch (error) {
