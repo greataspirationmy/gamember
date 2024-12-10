@@ -300,10 +300,14 @@
 
         // 加载事件数据
         async function loadEvents() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user) return;
+            
             try {
                 const { data, error } = await supabaseClient
                     .from('events')
                     .select('*')
+                    .eq('agent_id', user.agent_id)
                     .order('event_datetime', { ascending: true });
 
                 if (error) throw error;
