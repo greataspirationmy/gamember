@@ -2,11 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="manifest" href="https://greataspirationmy.github.io/gamember/manifest.json">
+    <link rel="manifest" href="/greataspirationmy.github.io/gamember/manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events Calendar</title>
-    <meta name="theme-color" content="#f0f2f5">
-    <link rel="apple-touch-icon" href="https://greataspirationmy.github.io/gamember/icon-144x144.png">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="apple-touch-icon" href="/greataspirationmy.github.io/gamember/icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -64,7 +64,7 @@
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: absolute;
-            width: auto;
+            width: 100%;
             backface-visibility: hidden;
             transition: transform 0.6s ease;
         }
@@ -177,18 +177,18 @@
 
         /* 事件弹窗样式 */
         .event-modal {
-   display: none;
-   position: center;
-   top: 0;
-   left: 0;
-   width: 100%;
-   height: 100%;
-   background-color: rgba(0, 0, 0, 0.5);
-   justify-content: center;
-   align-items: center;
-   z-index: 1000;
-   opacity: 0;
-   transition: opacity 0.3s ease;
+            display: none;
+            position: center;
+            top: 0;
+            left: 0;
+            width: auto;
+            height: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 .event-modal.active {
    opacity: 1;
@@ -293,43 +293,52 @@
 
     <script>
 
-        // 初始化 Supabase 客户端
-        const supabaseUrl = 'https://tzekaxushnvtrpywvfcu.supabase.co'; // 替换为您的 Supabase URL
+         // 初始化 Supabase 客户端
+         const supabaseUrl = 'https://tzekaxushnvtrpywvfcu.supabase.co'; // 替换为您的 Supabase URL
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6ZWtheHVzaG52dHJweXd2ZmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI2ODkwMzcsImV4cCI6MjA0ODI2NTAzN30.e8FCxsbI0aj9mZOtxyCZ7sA-fIlzLN-2x8HYoE74ESY'; // 替换为您的 Supabase 匿名密钥
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+        let currentDate = new Date();
+        let events = {}; // 存储事件数据
+
         // 加载事件数据
         async function loadEvents() {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            if (!user) return;
-            
             try {
                 const { data, error } = await supabaseClient
                     .from('events')
-                    .select('*')
-                    .eq('agent_id', user.agent_id)
+                    .select('title, event_datetime')
                     .order('event_datetime', { ascending: true });
 
                 if (error) throw error;
 
-                const eventsList = document.getElementById('eventsList');
+                data.forEach(event => {
+                    const dateString = new Date(event.event_datetime).toLocaleDateString();
+                    if (!events[dateString]) {
+                        events[dateString] = [];
+                    }
+                    events[dateString].push(event);
+                });
+
+                initCalendar();
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+
+                /*const eventsList = document.getElementById('eventsList');
                 eventsList.innerHTML = data.map(event => `
                     <div class="event-item">
                         <h3>${event.title}</h3>
                         <p>${event.description}</p>
-                        <p><strong>时间:</strong> ${new Date(event.event_datetime).toLocaleString()}</p>
+                        <p><strong>日期:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
                     </div>
                 `).join('');
             } catch (error) {
                 console.error('Error loading events:', error);
-            }
+            }*/
         }
 
         // 页面加载时调用
         document.addEventListener('DOMContentLoaded', loadEvents);
-        
-        let currentDate = new Date();
-        let events = {}; // 存储事件数据
 
         // 初始化日历
         function initCalendar() {
@@ -404,7 +413,7 @@
            const eventItem = document.createElement('div');
            eventItem.className = 'event-item';
            eventItem.innerHTML = `
-               <div class="event-time">${event.time || '全天'}</div>
+               <div class="event-time">${new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                <div class="event-description">${event.title}</div>
            `;
            eventsList.appendChild(eventItem);
@@ -459,14 +468,13 @@
 
         // 示例事件数据
         events = {
-            '2024-12-25': [
+            '2024-11-15': [
                 { title: '团队会议', time: '10:00 AM' },
                 { title: '项目截止日期', time: '5:00 PM' }
             ],
-            '2024-12-11': [
-                { title: 'SICM联合晚会', time: '08:00 PM' },
-                
-            ],
+            '2024-11-20': [
+                { title: '培训课程', time: '2:00 PM' }
+            ]
         };
 
         // 初始化日历
@@ -476,17 +484,15 @@
 
         if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/gamember/sw.js', {
-      scope: '/gamember/'
-    })
-    .then(registration => {
-      console.log('ServiceWorker registration successful');
-    })
-    .catch(err => {
-      console.error('ServiceWorker registration failed: ', err);
-    });
-  });
-}
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('ServiceWorker registration successful');
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+        });
+    }
     </script>
 </body>
 </html> 
