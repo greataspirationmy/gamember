@@ -307,7 +307,7 @@
 
         // 加载事件数据
         async function loadEvents() {
-            try {
+           try {
                 const { data, error } = await supabaseClient
                     .from('events')
                     .select('title, event_datetime')
@@ -316,31 +316,21 @@
 
                 if (error) throw error;
 
-                /*data.forEach(event => {
+                data.forEach(event => {
                     const dateString = new Date(event.event_datetime).toLocaleDateString();
                     if (!events[dateString]) {
                         events[dateString] = [];
                     }
                     events[dateString].push(event);
-                });*/
+                });
 
                 initCalendar();
             } catch (error) {
                 console.error('Error loading events:', error);
             }
-
-                const eventsList = document.getElementById('eventsList');
-                eventsList.innerHTML = data.map(event => `
-                    <div class="event-item">
-                        <h3>${event.title}</h3>
-                        <p>${event.description}</p>
-                        <p><strong>日期:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading events:', error);
-            }
         }
+
+            
 
         // 页面加载时调用
         document.addEventListener('DOMContentLoaded', loadEvents);
