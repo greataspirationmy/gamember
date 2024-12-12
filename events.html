@@ -346,6 +346,35 @@
     } catch (error) {
         console.error('Error loading events:', error);
     }
+
+            // 显示事件
+        function showEvents(date) {
+            const dateString = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${date}`;
+            const modal = document.getElementById('eventModal');
+            const selectedDate = document.getElementById('selectedDate');
+            const eventsList = document.getElementById('eventsList');
+            selectedDate.textContent = new Date(dateString).toLocaleDateString();
+            eventsList.innerHTML = '';
+
+            if (events[dateString]) {
+       events[dateString].forEach(event => {
+           const eventItem = document.createElement('div');
+           eventItem.className = 'event-item';
+           eventItem.innerHTML = `
+               <div class="event-time">${new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+               <div class="event-description">${event.title}</div>
+           `;
+           eventsList.appendChild(eventItem);
+    });
+            } else {
+                eventsList.innerHTML = '<div class="event-item">当天没有活动</div>';
+            }
+            modal.style.display = 'flex';
+            // 添加延时以确保过渡效果正常显示
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
 }
 
             
