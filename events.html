@@ -316,13 +316,13 @@
 
                 if (error) throw error;
 
-                data.forEach(event => {
+                /*data.forEach(event => {
                     const dateString = new Date(event.event_datetime).toLocaleDateString();
                     if (!events[dateString]) {
                         events[dateString] = [];
                     }
                     events[dateString].push(event);
-                });
+                });*/
 
                 initCalendar();
             } catch (error) {
