@@ -53,7 +53,7 @@
         /* 日历容器样式 */
         .calendar-container {
             max-width: 1000px;
-            margin: 40px auto;
+            margin: 50px auto;
             position: relative;
             transform-style: preserve-3d;
         }
@@ -307,28 +307,46 @@
 
         // 加载事件数据
         async function loadEvents() {
-           try {
-                const { data, error } = await supabaseClient
-                    .from('events')
-                    .select('title, event_datetime')
-                    .eq('agent_id', user.agent_id)
-                    .order('event_datetime', { ascending: true });
+    try {
+        const { data, error } = await supabaseClient
+            .from('events')
+            .select('title, event_datetime')
+            .eq('agent_id', user.agent_id) // 过滤特定 agent_id
+            .order('event_datetime', { ascending: true }); // 按时间升序排序
 
-                if (error) throw error;
+        if (error) throw error;
 
-                data.forEach(event => {
-                    const dateString = new Date(event.event_datetime).toLocaleDateString();
-                    if (!events[dateString]) {
-                        events[dateString] = [];
-                    }
-                    events[dateString].push(event);
-                });
+        // 清空之前的事件数据
+        const eventModal = document.getElementById('eventModal');
+        eventModal.innerHTML = '';
 
-                initCalendar();
-            } catch (error) {
-                console.error('Error loading events:', error);
+        // 处理获取到的活动数据
+        data.forEach(event => {
+            const dateString = new Date(event.event_datetime).toLocaleDateString();
+            const timeString = new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // 按日期分组存储
+            if (!events[dateString]) {
+                events[dateString] = [];
             }
-        }
+            events[dateString].push(event);
+
+            // 动态更新 HTML
+            const eventsList = document.createElement('div');
+            eventsList.classList.add('event-item');
+            eventsList.innerHTML = `
+                <h3>${event.title}</h3>
+                <p>${dateString} ${timeString}</p>
+            `;
+            eventsContainer.appendChild(eventsList);
+        });
+
+        // 初始化日历或刷新界面
+        initCalendar();
+    } catch (error) {
+        console.error('Error loading events:', error);
+    }
+}
 
             
 
