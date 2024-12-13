@@ -306,6 +306,23 @@
         let currentDate = new Date();
         let events = {}; // 存储事件数据
 
+        async function getUser() {
+       const { data, error } = await supabaseClient.auth.getUser();
+       if (error) {
+           console.error('Error fetching user:', error);
+           return null;
+       }
+       return data.user; // 假设返回的用户对象包含 agent_id
+   }
+
+   // 在页面加载时获取用户信息
+   document.addEventListener('DOMContentLoaded', async () => {
+       user = await getUser();
+       if (user) {
+           loadEvents(); // 确保在获取用户后调用 loadEvents
+       }
+   });
+
         // 加载事件数据
         async function loadEvents() {
             const user = JSON.parse(localStorage.getItem('currentUser'));
