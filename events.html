@@ -307,51 +307,39 @@
 
         // 加载事件数据
         async function loadEvents() {
-            
-    try {
-        const { data, error } = await supabaseClient
-            .from('events')
-            .select('title, event_datetime')
-            .eq('agent_id') // 过滤特定 agent_id
-            .order('event_datetime', { ascending: true }); // 按时间升序排序
+            try {
+                const { data, error } = await supabaseClient
+                    .from('events')
+                    .select('title, event_datetime')
+                    .order('event_datetime', { ascending: true });
 
-        if (error) throw error;
+                if (error) throw error;
 
-        // 清空之前的事件数据
-        const eventModal = document.getElementById('eventModal');
-        const eventsContainer = document.getElementById('eventsList'); // 确保定义 eventsContainer
-        eventsContainer.innerHTML = ''; // 清空之前的事件数据
-        eventModal.innerHTML = '';
+                data.forEach(event => {
+                    const dateString = new Date(event.event_datetime).toLocaleDateString();
+                    if (!events[dateString]) {
+                        events[dateString] = [];
+                    }
+                    events[dateString].push(event);
+                });
 
-        // 处理获取到的活动数据
-        data.forEach(event => {
-            const dateString = new Date(event.event_datetime).toLocaleDateString();
-            const timeString = new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            // 按日期分组存储
-            if (!events[dateString]) {
-                events[dateString] = [];
+                initCalendar();
+            } catch (error) {
+                console.error('Error loading events:', error);
             }
-            events[dateString].push(event);
 
-            // 动态更新 HTML
-            const eventsList = document.createElement('div');
-            eventsList.classList.add('event-item');
-            eventsList.innerHTML = `
-                <h3>${event.title}</h3>
-                <p>${dateString} ${timeString}</p>
-            `;
-            eventsContainer.appendChild(eventsList);
-        });
-
-        // 初始化日历或刷新界面
-        initCalendar();
-    } catch (error) {
-        console.error('Error loading events:', error);
-    }
-
-        
-}
+                /*const eventsList = document.getElementById('eventsList');
+                eventsList.innerHTML = data.map(event => `
+                    <div class="event-item">
+                        <h3>${event.title}</h3>
+                        <p>${event.description}</p>
+                        <p><strong>日期:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }*/
+        }
 
             
 
@@ -424,9 +412,8 @@
             const modal = document.getElementById('eventModal');
             const selectedDate = document.getElementById('selectedDate');
             const eventsList = document.getElementById('eventsList');
-            selectedDate = new Date(dateString).toLocaleDateString();
+            selectedDate.textContent = new Date(dateString).toLocaleDateString();
             eventsList.innerHTML = '';
-
             if (events[dateString]) {
        events[dateString].forEach(event => {
            const eventItem = document.createElement('div');
@@ -495,6 +482,9 @@
             ],
             '2024-11-20': [
                 { title: '培训课程', time: '2:00 PM' }
+            ],
+            '2024-12-17': [
+                { title: 'GE圣诞派对', time: '08:00 PM' }
             ]
         };
 
