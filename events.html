@@ -319,6 +319,8 @@
 
         // 清空之前的事件数据
         const eventModal = document.getElementById('eventModal');
+        const eventsContainer = document.getElementById('eventsList'); // 确保定义 eventsContainer
+        eventsContainer.innerHTML = ''; // 清空之前的事件数据
         eventModal.innerHTML = '';
 
         // 处理获取到的活动数据
