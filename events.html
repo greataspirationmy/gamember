@@ -287,7 +287,6 @@
         <div class="event-modal-content">
             <div class="event-modal-header">
                 <h3>Events on <span id="selectedDate"></span></h3>
-                <div id="selectedDate"></div>
                 <button class="event-modal-close" onclick="closeEventModal()">×</button>
             </div>
             <div id="eventsList"></div>
@@ -425,7 +424,7 @@
             const modal = document.getElementById('eventModal');
             const selectedDate = document.getElementById('selectedDate');
             const eventsList = document.getElementById('eventsList');
-            selectedDate.textContent = new Date(dateString).toLocaleDateString();
+            selectedDate = new Date(dateString).toLocaleDateString();
             eventsList.innerHTML = '';
 
             if (events[dateString]) {
