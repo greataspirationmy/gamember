@@ -307,6 +307,8 @@
 
         // 加载事件数据
         async function loadEvents() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
             
     try {
         const { data, error } = await supabaseClient
@@ -529,15 +531,17 @@
 
         if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('ServiceWorker registration successful');
-      })
-      .catch(err => {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-        });
-    }
+    navigator.serviceWorker.register('/gamember/sw.js', {
+      scope: '/gamember/'
+    })
+    .then(registration => {
+      console.log('ServiceWorker registration successful');
+    })
+    .catch(err => {
+      console.error('ServiceWorker registration failed: ', err);
+    });
+  });
+}
     </script>
 </body>
 </html> 
