@@ -375,7 +375,7 @@
     const { data, error } = await supabaseClient
         .from('events') // 替换为您的表名
         .select('title, event_datetime')
-        .order('event_datetime', { ascending: true }); // 按时间升序排序
+        .order('event_datetime', dateString); // 按时间升序排序
 
     if (error) {
         console.error('Error fetching events:', error);
