@@ -364,7 +364,11 @@
 
         // 显示事件
         async function showEvents(date) {
-    const dateString = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${date}`;
+    // 使用年-月-日格式
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // 确保月份是两位数
+    const dateString = `${year}-${month}-${String(date).padStart(2, '0')}`; // 确保日期是两位数
+            
     const modal = document.getElementById('eventModal');
     const selectedDate = document.getElementById('selectedDate');
     const eventsList = document.getElementById('eventsList');
