@@ -302,65 +302,79 @@
 
         // 初始化日历
         function initCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            const monthLabel = document.getElementById('currentMonthLabel');
             
-            // 设置月份标签
-            monthLabel.textContent = currentDate.toLocaleString('default', { 
-                month: 'long', 
-                year: 'numeric' 
+        // 从 Supabase 获取事件数据
+    const { data, error } = await supabaseClient
+        .from('events') // 替换为您的表名
+        .select('title, event_datetime')
+        .order('event_datetime', dateString); // 按时间升序排序
+
+    if (error) {
+        console.error('Error fetching events:', error);
+        eventsList.innerHTML = '<div class="event-item">无法加载活动</div>';
+        return;
+    }
+            
+    const grid = document.getElementById('calendarGrid');
+    const monthLabel = document.getElementById('currentMonthLabel');
+    
+    // 设置月份标签
+    monthLabel.textContent = currentDate.toLocaleString('default', { 
+        month: 'long', 
+        year: 'numeric' 
+    });
+
+    // 添加星期几的标题
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    weekdays.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'weekday';
+        dayElement.textContent = day;
+        grid.appendChild(dayElement);
+    });
+
+    // 获取当月的天数
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startingDay = firstDay.getDay();
+
+    // 添加空白天数
+    for (let i = 0; i < startingDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'day empty';
+        grid.appendChild(emptyDay);
+    }
+
+    // 添加日期
+    for (let date = 1; date <= lastDay.getDate(); date++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'day';
+        
+        // 添加日期数字
+        const dateNumber = document.createElement('div');
+        dateNumber.className = 'date-number';
+        dateNumber.textContent = date;
+        dayElement.appendChild(dateNumber);
+        
+        // 生成与数据库一致的日期字符串
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`; // 确保格式为年-月-日
+
+        // 检查是否有事件并添加事件标题
+        if (events[dateString]) {
+            events[dateString].forEach(event => {
+                const eventTitle = document.createElement('div');
+                eventTitle.className = 'event-title';
+                eventTitle.textContent = event.title;
+                dayElement.appendChild(eventTitle);
             });
-
-            // 添加星期几的标题
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            weekdays.forEach(day => {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'weekday';
-                dayElement.textContent = day;
-                grid.appendChild(dayElement);
-            });
-
-            // 获取当月的天数
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const startingDay = firstDay.getDay();
-
-            // 添加空白天数
-            for (let i = 0; i < startingDay; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'day empty';
-                grid.appendChild(emptyDay);
-            }
-
-            // 添加日期
-            for (let date = 1; date <= lastDay.getDate(); date++) {
-       const dayElement = document.createElement('div');
-       dayElement.className = 'day';
-       
-       // 添加日期数字
-       const dateNumber = document.createElement('div');
-       dateNumber.className = 'date-number';
-       dateNumber.textContent = date;
-       dayElement.appendChild(dateNumber);
-       
-       // 检查是否有事件并添加事件标题
-       const dateString = `${year}-${month + 1}-${date}`;
-       if (events[dateString]) {
-           events[dateString].forEach(event => {
-               const eventTitle = document.createElement('div');
-               eventTitle.className = 'event-title';
-               eventTitle.textContent = event.title;
-               dayElement.appendChild(eventTitle);
-           });
-       }
-        dayElement.onclick = () => showEvents(date);
-                grid.appendChild(dayElement);
-            }
-            // 定期轮询，每60秒请求一次最新活动内容
-    setInterval(loadEvents, 60000); // 60000毫秒 = 60秒
         }
+        
+        dayElement.onclick = () => showEvents(date);
+        grid.appendChild(dayElement);
+    }
+}
 
         // 显示事件
         async function showEvents(date) {
@@ -448,7 +462,7 @@
         }
 
         // 示例事件数据
-        events = {
+        /*events = {
             '2024-11-15': [
                 { title: '团队会议', time: '10:00 AM' },
                 { title: '项目截止日期', time: '5:00 PM' }
@@ -468,7 +482,7 @@
             '2024-12-25': [
                 { title: '圣诞节', time: '11:00 AM' }
             ]
-        };
+        };*/
 
         // 初始化日历
         document.addEventListener('DOMContentLoaded', function() {
