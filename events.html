@@ -363,34 +363,45 @@
         }
 
         // 显示事件
-        function showEvents(date) {
-            const dateString = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${date}`;
-            const modal = document.getElementById('eventModal');
-            const selectedDate = document.getElementById('selectedDate');
-            const eventsList = document.getElementById('eventsList');
-            selectedDate.textContent = new Date(dateString).toLocaleDateString();
-            eventsList.innerHTML = '';
-            if (events[dateString]) {
-       events[dateString].forEach(event => {
-           const eventItem = document.createElement('div');
-           eventItem.className = 'event-item';
-           eventItem.innerHTML = `
-               <div class="event-time">${new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-               <div class="event-description">${event.title}</div>
-           `;
-           eventsList.appendChild(eventItem);
-    });
-            } else {
-                eventsList.innerHTML = '<div class="event-item">当天没有活动</div>';
-            }
-            modal.style.display = 'flex';
-            // 添加延时以确保过渡效果正常显示
-            setTimeout(() => {
-                modal.classList.add('active');
-            }, 10);
-            // 定期轮询，每60秒请求一次最新活动内容
-    setInterval(loadEvents, 60000); // 60000毫秒 = 60秒
-        }
+        async function showEvents(date) {
+    const dateString = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${date}`;
+    const modal = document.getElementById('eventModal');
+    const selectedDate = document.getElementById('selectedDate');
+    const eventsList = document.getElementById('eventsList');
+    selectedDate.textContent = new Date(dateString).toLocaleDateString();
+    eventsList.innerHTML = '';
+
+    // 从 Supabase 获取事件数据
+    const { data, error } = await supabaseClient
+        .from('events') // 替换为您的表名
+        .select('title, event_datetime')
+        .order('event_datetime', { ascending: true }); // 按时间升序排序
+
+    if (error) {
+        console.error('Error fetching events:', error);
+        eventsList.innerHTML = '<div class="event-item">无法加载活动</div>';
+        return;
+    }
+
+    if (data.length > 0) {
+        data.forEach(event => {
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.innerHTML = `
+                <div class="event-time">${new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="event-description">${event.title}</div>
+            `;
+            eventsList.appendChild(eventItem);
+        });
+    } else {
+        eventsList.innerHTML = '<div class="event-item">当天没有活动</div>';
+    }
+    
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+}
 
         
         // 修改关闭弹窗的函数
