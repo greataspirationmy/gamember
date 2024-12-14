@@ -420,10 +420,15 @@ async function loadEvents() {
 
     if (data.length > 0) {
         data.forEach(event => {
+            const eventTime = new Date(event.event_datetime).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
             const eventItem = document.createElement('div');
             eventItem.className = 'event-item';
             eventItem.innerHTML = `
-                <div class="event-time">${new Date(event.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="event-time">${eventTime}</div>
                 <div class="event-description">${event.title}</div>
             `;
             eventsList.appendChild(eventItem);
