@@ -357,6 +357,8 @@
         dayElement.onclick = () => showEvents(date);
                 grid.appendChild(dayElement);
             }
+            // 定期轮询，每60秒请求一次最新活动内容
+    setInterval(loadEvents, 60000); // 60000毫秒 = 60秒
         }
 
         // 显示事件
@@ -385,6 +387,8 @@
             setTimeout(() => {
                 modal.classList.add('active');
             }, 10);
+            // 定期轮询，每60秒请求一次最新活动内容
+    setInterval(loadEvents, 60000); // 60000毫秒 = 60秒
         }
 
         
@@ -440,6 +444,9 @@
                 { title: 'GE圣诞派对', time: '08:00 PM' }
             ],
             '2024-12-21': [
+                { title: '动漫展', time: '11:00 AM' }
+            ],
+            '2024-12-22': [
                 { title: '动漫展', time: '11:00 AM' }
             ]
         };
