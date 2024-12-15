@@ -237,6 +237,20 @@ async function submitRegistration() {
     }
 }
 
+        if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/gamember/sw.js', {
+      scope: '/gamember/'
+    })
+    .then(registration => {
+      console.log('ServiceWorker registration successful');
+    })
+    .catch(err => {
+      console.error('ServiceWorker registration failed: ', err);
+    });
+  });
+}
+
         // 页面加载时
         document.addEventListener('DOMContentLoaded', () => {
             displaySports(); // 显示运动项目
