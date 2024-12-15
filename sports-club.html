@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="https://greataspirationmy.github.io/gamember/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="https://greataspirationmy.github.io/gamember/icon-144x144.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://greataspirationmy.github.io/gamember/supabase.js" defer></script>
+    <link href='https://fonts.googleapis.com/css?family=Agbalumo' rel='stylesheet'>
+    <title>Sports-club</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1d0e0b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: auto; /* 去掉默认边距 */
+            background-image: url('https://greataspirationmy.github.io/gamember/bg5.gif'); /* 自定义动态背景图 */
+            background-size: cover; /* 背景图覆盖整个页面 */
+            background-position: center; /* 背景图居中 */
+            background-repeat: no-repeat; /* 不重复背景图 */
+        }
+
+        .logo-container {
+           display: flex;
+           position: center;
+            flex-direction: column; /* 垂直排列 */
+            align-items: center; /* 水平居中对齐 */
+            margin-top: 5px; /* logo 和 MEMBER 之间的间距 */
+            margin-bottom: -5px;
+            
+        }
+
+        .logo {
+            width: 160px; /* logo 宽度 */
+            height: auto; /* 自适应高度 */
+            margin-right: 10px; /* logo 和文本之间的间距 */
+        }
+
+        .container {
+            font-family: 'Agbalumo';
+             margin-top: 20px; /* 调整上方间距 */
+            text-align: center;
+            padding: 20px; /* 添加内边距 */
+            background-color: #ffedcd; 
+            border-radius: 10px; /* 圆角 */
+            box-shadow: 0 10px 25px rgba(253, 156, 28, 0.719); /* 阴影效果 */
+            color: rgb(88, 60, 0); /* 文字颜色（可选） */
+        }
+        h1 {
+            text-align: center;
+        }
+        .sport-item {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 20px;
+            background-color: #472e00;
+            color: #ffe7b9;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .sport-item:hover {
+            background-color: #45a049;
+        }
+        .user-list {
+            margin-top: 20px;
+        }
+        .user-item {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .back-button {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 15px;
+            background-color: #472e00;
+            color: #ffe7b9;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+       }
+        .back-button:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+       }
+        .back-button i {
+           font-size: 18px;
+       }
+       .hidden {
+        display: none;
+    }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        padding: 20px;
+        width: 90%;
+        max-width: 400px;
+    }
+
+    .modal-content {
+        text-align: center;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="logo-container">
+            <img src="https://greataspirationmy.github.io/gamember/galogodb.png" alt="Logo" class="logo">
+        </div>
+        <h1>SPORTS CLUB</h1>
+        <div id="sportsList"></div>
+        <!-- 自定义模态框 -->
+<div id="modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">×</span>
+        <h3 id="modal-title"></h3>
+        <div id="registered-users"></div>
+        <hr>
+        <h4>报名表单</h4>
+        <input id="userName" type="text" placeholder="请输入您的姓名">
+        <input id="date" type="date">
+        <input id="time" type="time">
+        <button onclick="submitRegistration()">提交报名</button>
+    </div>
+</div>
+        <button class="back-button" onclick="window.location.href='dashboard.html'">
+            <i class="fas fa-arrow-left"></i>
+            Back
+        </button>
+    </div>
+
+    <script>
+
+        // 运动项目列表
+        const sports = [
+            { name: '🏸羽毛球', id: 1 },
+            { name: '🏀篮球', id: 2 },
+            { name: '🏃跑步', id: 3 },
+            { name: '🥎网球', id: 4 },
+            { name: '🏋️‍♂️健身', id: 5 }
+        ];
+        // 当前选择的运动项目
+let selectedSport = null;
+
+        // 显示运动项目
+function displaySports() {
+    const sportsList = document.getElementById('sportsList');
+    sports.forEach(sport => {
+        const sportItem = document.createElement('div');
+        sportItem.className = 'sport-item';
+        sportItem.textContent = sport.name;
+        sportItem.onclick = () => openModal(sport.name); // 点击打开模态框
+        sportsList.appendChild(sportItem);
+    });
+}
+
+// 打开模态框
+async function openModal(sportName) {
+    selectedSport = sportName; // 保存当前选择的运动项目
+    const modal = document.getElementById('modal');
+    modal.classList.remove('hidden');
+    document.getElementById('modal-title').textContent = `${sportName} 已报名人员`;
+
+    // 加载已报名用户
+    const { data, error } = await supabaseClient
+        .from('sports_club')
+        .select('*')
+        .eq('sport', sportName);
+
+    if (error) {
+        console.error('Error loading users:', error);
+        alert('加载报名数据失败');
+        return;
+    }
+
+    // 更新模态框中的报名信息
+    const registeredUsers = document.getElementById('registered-users');
+    registeredUsers.innerHTML = ''; // 清空内容
+    const userCount = data.length;
+    registeredUsers.innerHTML = `<p>当前报名人数：${userCount}</p>`;
+    data.forEach(user => {
+        const userItem = document.createElement('div');
+        userItem.textContent = `${user.name} (${user.date} ${user.time})`;
+        registeredUsers.appendChild(userItem);
+    });
+}
+
+// 关闭模态框
+function closeModal() {
+    const modal = document.getElementById('modal');
+    modal.classList.add('hidden');
+}
+
+// 提交报名
+async function submitRegistration() {
+    const userName = document.getElementById('userName').value;
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+
+    if (!userName || !date || !time) {
+        alert('请填写所有字段');
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('sports_club')
+        .insert([{ name: userName, sport: selectedSport, date: date, time: time }]);
+
+    if (error) {
+        console.error('Error inserting data:', error);
+        alert('报名失败，请重试');
+    } else {
+        alert('报名成功！');
+        openModal(selectedSport); // 重新加载模态框内容
+    }
+}
+
+        // 页面加载时
+        document.addEventListener('DOMContentLoaded', () => {
+            displaySports(); // 显示运动项目
+            loadRegisteredUsers(); // 加载已报名用户
+        });
+    </script>
+</body>
+</html>
