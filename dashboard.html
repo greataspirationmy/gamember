@@ -184,7 +184,7 @@
             display: flex;
             justify-content: center; /* 水平居中 */
             gap: 20px;
-            margin-top: 40px;
+            margin-top: 30px;
         }
 
         .menu-button {
@@ -318,7 +318,7 @@
         }
     }
     .check-in-container {
-        margin-top: 20px;
+        margin-top: -10px;
         text-align: center;
     }
     .check-in-button {
@@ -489,6 +489,12 @@
    .notification-badge.hidden {
        display: none;
    }
+
+        .sports-club-container {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    margin-top: 20px; /* 与上方按钮的间距 */
+}
     
     </style>
     <!-- 引入 Font Awesome 图标库 -->
@@ -542,6 +548,11 @@
             <button class="menu-button events" onclick="window.location.href='events.html'">
                 <i class="fas fa-calendar"></i>
                 Events
+            </button>
+        </div>
+        <div class="sports-club-container">
+            <button class="menu-button sports-club" onclick="window.location.href='C:\\Users\\User\\Documents\\sports-club.html'">
+                <i class="fas fa-basketball-ball"></i> Sports Club
             </button>
         </div>
         <div class="notifications-panel" id="notificationsList">
